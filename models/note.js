@@ -2,18 +2,27 @@ const mongoose = require('mongoose')
 
 const noteSchema = new mongoose.Schema({
     title: String,
-    username: String,
-    toUsername: String,
-    content: {
-        type: String,
-        required: true,
-        minlength: 5
+    content: String,
+    Owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    responseble: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    complete: {
+        type: Boolean,
+        default: false
+    },
+    moreNotes:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Note'
     },
     date: {
         type: Date,
         default: Date.now
     },
-    comments: []
 })
 
 noteSchema.set('toJson', {

@@ -3,7 +3,11 @@ const mongoose = require('mongoose')
 const noteSchema = new mongoose.Schema({
     title: String,
     content: String,
-    Owner: {
+    room: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Room'
+    },
+    owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
@@ -24,7 +28,10 @@ const noteSchema = new mongoose.Schema({
         default: Date.now
     },
 })
-
+noteSchema.pre('remove', (next) => {
+    const Note = mongoose.model('note')
+    Note.remove({ _id: {$in: $this.Note}}).then(() =>{ next() })
+})
 noteSchema.set('toJson', {
     transform: (document, returnedObject) => {
         returnedObject.id = returnedObject._id.toString()

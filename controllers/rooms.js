@@ -14,6 +14,10 @@ roomRouter.get('/:id',async (request,response) => {
             {
                 response.json(room)
             }
+            else if(room.users.some((actual)=> actual.id === request.body.userId))
+            {
+                response.json(room)
+            }
             response.status(404).end()
         }
         else
@@ -31,7 +35,7 @@ roomRouter.post('/',async (request,response,next) => {
     const passwordHash = await bcrypt.hash(body.pass, saltRounds)
     const room = new Room({
         owner: body.ownerId,
-        users: [],
+        users: [body.ownerId],
         notes: [],
         pass : passwordHash
     })
@@ -43,63 +47,35 @@ roomRouter.post('/',async (request,response,next) => {
     }
 })
 
-roomRouter.put('/comment/:id', async(request,response,next) => {
+roomRouter.put('/:id', async(request,response,next) => {
     try {
-        let commentedNote = await Note.findById(request.params.id)
-        if(!commentedNote)
+        let room = await Room.findById(request.params.id)
+        if(!room)
         {
             response.status(404)
         }
     } catch (error) {
         next(error)
     }
-    const body = request.body
-    const notes = 
-    [
-        ...commentedNote.comments,
-        {   
-            title: body.title,
-            content: body.content,
-            date: body.date || Date.now,
-            comments: [],
-            username: body.name,
-            mail: body.mail
-        }
-    ]
-    commentedNote = {...commentedNote, comments: notes}
+    const newUser = User.find({username: request.body.username})
+    const rooms = 
+    {
+        ...room,
+        users: [...room.users, newUser.id]
+    }
     try {
-        const updateNote = await Note.findByIdAndUpdate(request.params.id, commentedNote,{ new: true})
-        response.json(updateNote)
+        const updateRoom = await Room.findByIdAndUpdate(request.params.id, rooms,{ new: true})
+        response.json(updateRoom)
     } catch (error) {
         next(error)
     }
 })
 roomRouter.delete('/:id',(request,response,next) =>{
-    Note.findByIdAndRemove(request.params.id)
+    Room.findByIdAndRemove(request.params.id)
     .then(()=> {
         response.status(204).end()
     })
     .catch(error => (error))
-})
-
-roomRouter.put('/:id',async(request,response,next) => {
-    const body = request.body
-    
-    const note = {   
-        title: body.title,
-        content: body.content,
-        date: body.date || Date.now,
-        comments: [...body.comments],
-        username: body.name,
-        mail: body.mail
-    }
-
-    try {
-        const updateNote = await Note.findByIdAndUpdate(request.params.id, note,{ new: true})
-        response.json(updateNote)
-    } catch (error) {
-        next(error)
-    }
 })
 
 module.exports = roomRouter

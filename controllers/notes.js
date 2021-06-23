@@ -3,15 +3,8 @@ const Note = require('../models/note')
 const User = require('../models/user')
 
 
-notesRouter.get('/:username/',async(request,response) => {
-    const notes = await Note.find({author: {
-        username: request.params.username
-    }})
-    response.json(notes)
-})
-
 notesRouter.get('/:id',async (request,response) => {
-    Note.findById(request.params.id)
+    Note.findById(request.params.id).populate('owner','responsable','moreNotes')
     .then(note => {
         if(note)
         {
@@ -26,13 +19,12 @@ notesRouter.get('/:id',async (request,response) => {
 
 notesRouter.post('/',async (request,response,next) => {
     const body = request.body
-    const user = await User.findById(body.userId)
     const note = new Note({
         title: body.title,
-        username: body.username,
-        mail: body.mail,
+        owner: body.ownerId,
+        responsable: body.responsableId || body.ownerId,
         content: body.content,
-        comments: [],
+        moreNotes: [],
         date: new Date()
     })
     try {
@@ -41,8 +33,6 @@ notesRouter.post('/',async (request,response,next) => {
     } catch (error) {
         next(error)
     }
-    
-    
 })
 notesRouter.put('/comment/:id', async(request,response,next) => {
     try {
@@ -54,22 +44,18 @@ notesRouter.put('/comment/:id', async(request,response,next) => {
     } catch (error) {
         next(error)
     }
-    const body = request.body
-    const notes = 
-    [
-        ...commentedNote.comments,
-        {   
-            title: body.title,
-            content: body.content,
-            date: body.date || Date.now,
-            comments: [],
-            username: body.name,
-            mail: body.mail
-        }
-    ]
-    commentedNote = {...commentedNote, comments: notes}
+    const note = new Note({
+        title: body.title,
+        owner: body.ownerId,
+        responsable: body.responsableId || body.ownerId,
+        content: body.content,
+        moreNotes: [],
+        date: new Date()
+    })
+    const newComment = await note.save()
+    const noteToUpdate = {...commentedNote, moreNotes: [...moreNotes, newComment.id]}
     try {
-        const updateNote = await Note.findByIdAndUpdate(request.params.id, commentedNote,{ new: true})
+        const updateNote = await Note.findByIdAndUpdate(request.params.id, noteToUpdate,{ new: true})
         response.json(updateNote)
     } catch (error) {
         next(error)

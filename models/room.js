@@ -1,19 +1,14 @@
 const mongoose = require('mongoose')
+const noteSchema = require('./note')
 
-const noteSchema = new mongoose.Schema({
-    title: String,
-    username: String,
-    toUsername: String,
-    content: {
+const roomSchema = new mongoose.Schema({
+    creator: {
         type: String,
-        required: true,
-        minlength: 5
+        unique: true
     },
-    date: {
-        type: Date,
-        default: Date.now
-    },
-    comments: []
+    notes: [noteSchema],
+    
+    
 })
 
 noteSchema.set('toJson', {

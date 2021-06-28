@@ -21,7 +21,7 @@ usersRouter.get('/notes', async(request,response,next) => {
     next(error)
   }
 })
-usersRouter.post('/', async (request, response) => {
+usersRouter.post('/', async (request, response, next) => {
   const body = request.body
 
   const saltRounds = 10
@@ -33,9 +33,12 @@ usersRouter.post('/', async (request, response) => {
     passwordHash,
   })
 
-  const savedUser = await user.save()
-
-  response.json(savedUser)
+  try {
+    const savedUser = await user.save()
+    response.json(savedUser)
+  } catch (error) {
+    next(error)
+  }
 })
 
 module.exports = usersRouter

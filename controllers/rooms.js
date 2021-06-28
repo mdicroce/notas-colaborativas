@@ -3,7 +3,10 @@ const Room = require('../models/room')
 const Note = require('../models/note')
 const User = require('../models/user')
 const bcrypt = require('bcrypt')
-
+roomRouter.get('/', async(request, response) => {
+    const respuesta = await Room.find({}).populate('owner','users')
+    response.json(respuesta)
+})
 roomRouter.get('/:id',async (request,response) => {
     const pass = await bcrypt.hash(body.pass, saltRounds)
     try {
@@ -32,6 +35,7 @@ roomRouter.get('/:id',async (request,response) => {
 roomRouter.post('/',async (request,response,next) => {
     const body = request.body
     const saltRounds = 10
+    
     const passwordHash = await bcrypt.hash(body.pass, saltRounds)
     const room = new Room({
         owner: body.ownerId,

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 
+
 const noteSchema = new mongoose.Schema({
     title: String,
     content: String,
@@ -19,14 +20,18 @@ const noteSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    moreNotes:{
+    moreNotes:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Note'
-    },
+    }],
     date: {
         type: Date,
         default: Date.now
     },
+    room: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Room'
+    }
 })
 noteSchema.pre('remove', (next) => {
     const Note = mongoose.model('note')

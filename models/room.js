@@ -18,7 +18,7 @@ const roomSchema = new mongoose.Schema({
 
 })
 
-noteSchema.set('toJson', {
+roomSchema.set('toJson', {
     transform: (document, returnedObject) => {
         returnedObject.id = returnedObject._id.toString()
         delete returnedObject._id
@@ -26,4 +26,4 @@ noteSchema.set('toJson', {
     }
 })
 
-module.exports = mongoose.model('Note', noteSchema)
+module.exports = mongoose.model('Room', roomSchema)

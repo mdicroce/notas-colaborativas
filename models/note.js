@@ -21,8 +21,7 @@ const noteSchema = new mongoose.Schema({
         default: false
     },
     moreNotes:[{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Note'
+        
     }],
     date: {
         type: Date,

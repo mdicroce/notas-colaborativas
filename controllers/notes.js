@@ -2,8 +2,20 @@ const notesRouter = require('express').Router()
 const Note = require('../models/note')
 const User = require('../models/user')
 const Room = require('../models/room')
+const { findByIdAndUpdate } = require('../models/note')
 
-
+notesRouter.get('/',(request,response) => {
+    Note.find({})
+    .then(note => {
+        if(note)
+        {
+            response.json(note)
+        }
+        else{
+            response.status(404).end()
+        }
+    })
+})
 notesRouter.get('/:id',async (request,response,next) => {
     Note.findById(request.params.id).populate('owner').populate('room').populate('moreNotes')
     .then(note => {
@@ -23,7 +35,7 @@ notesRouter.post('/',async (request,response,next) => {
     const note = new Note({
         title: body.title,
         owner: body.ownerId,
-        responsable: body.responsableId || body.ownerId,
+        responsable: body.responsableId ? body.responsableId : body.ownerId,
         content: body.content,
         moreNotes: [],
         date: new Date(),
@@ -32,62 +44,62 @@ notesRouter.post('/',async (request,response,next) => {
     try {
         
         const savedNote = await note.save()
-        const room = Room.findById(body.room)
-        console.log(room)/* 
+        const room = await Room.findById(body.room)
+        console.log(room)
         room.notes = room.notes.concat(savedNote._id)
         await room.save()
-        console.log(final) */
-        response.json(room)
+        response.json(savedNote)
     } catch (error) {
         next(error)
     }
 })
 notesRouter.put('/comment/:id', async(request,response,next) => {
-    try {
-        let commentedNote = await Note.findById(request.params.id)
-        if(!commentedNote)
-        {
-            response.status(404)
-        }
-    } catch (error) {
-        next(error)
-    }
-    const note = new Note({
+    const body = request.body
+    
+    const note = {
         title: body.title,
         owner: body.ownerId,
         responsable: body.responsableId || body.ownerId,
         content: body.content,
-        moreNotes: [],
+        moreNotes: body.moreNotes,
         date: new Date()
-    })
-    const newComment = await note.save()
-    const noteToUpdate = {...commentedNote, moreNotes: [...moreNotes, newComment.id]}
+    }
+    
     try {
-        const updateNote = await Note.findByIdAndUpdate(request.params.id, noteToUpdate,{ new: true})
+        const updateNote = await Note.findByIdAndUpdate(request.params.id, note,{ new: true})
         response.json(updateNote)
     } catch (error) {
         next(error)
     }
 })
-notesRouter.delete('/:id',(request,response,next) =>{
-    Note.findByIdAndRemove(request.params.id)
+notesRouter.delete('/:id',async (request,response,next) =>{
+    Note.findById(request.params.id)
+    .then(async (note) => {
+        let room = await Room.findById(note.room)
+        console.log(room)
+        room.notes = room.notes.filter((actual) => actual != request.params.id)
+        console.log(room)
+        room.save()
+        
+    })
+    Note.deleteOne({"id" : request.params.id})
     .then(()=> {
         response.status(204).end()
     })
-    .catch(error => (error))
+    .catch(error => (next(error)))
 })
 
 notesRouter.put('/:id',async(request,response,next) => {
     const body = request.body
     
-    const note = {   
+    const note = new Note({
         title: body.title,
+        owner: body.ownerId,
+        responsable: body.responsableId || body.ownerId,
         content: body.content,
-        date: body.date || Date.now,
-        comments: [...body.comments],
-        username: body.name,
-        mail: body.mail
-    }
+        moreNotes: body.newNotes,
+        date: new Date()
+    })
 
     try {
         const updateNote = await Note.findByIdAndUpdate(request.params.id, note,{ new: true})

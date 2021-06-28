@@ -8,12 +8,13 @@ roomRouter.get('/', async(request, response) => {
     response.json(respuesta)
 })
 roomRouter.get('/:id',async (request,response) => {
-    const pass = await bcrypt.hash(body.pass, saltRounds)
+    const body = request.body
+    const room = await Room.findById(request.params.id).populate('owner').populate('users').populate('notes')
+    const pass = await bcrypt.compare(body.pass ? body.pass : "1",room.pass)
     try {
-        const room = await Room.findById(request.params.id).populate('owner','users','notes')
         if(room)
         {
-            if(room.pass === pass)
+            if(pass)
             {
                 response.json(room)
             }
@@ -75,7 +76,11 @@ roomRouter.put('/:id', async(request,response,next) => {
     }
 })
 roomRouter.delete('/:id',(request,response,next) =>{
-    Room.findByIdAndRemove(request.params.id)
+    Room.findById(request.params.id)
+    .then((room) => {
+        room.notes.forEach(async(actual) => {await Note.deleteOne({"_id" : actual})})
+    })
+    Room.findByIdAndDelete(request.params.id)
     .then(()=> {
         response.status(204).end()
     })

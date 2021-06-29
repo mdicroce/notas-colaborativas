@@ -2,7 +2,7 @@ const notesRouter = require('express').Router()
 const Note = require('../models/note')
 const User = require('../models/user')
 const Room = require('../models/room')
-const { findByIdAndUpdate } = require('../models/note')
+const jwt = require('jsonwebtoken')
 
 notesRouter.get('/',(request,response) => {
     Note.find({})
@@ -31,11 +31,21 @@ notesRouter.get('/:id',async (request,response,next) => {
 })
 
 notesRouter.post('/',async (request,response,next) => {
+    
     const body = request.body
+    
+    const token = request.token
+    console.log(token)
+    const decodedToken = jwt.verify(token, process.env.SECRET)
+    if(!token||!decoddedToken.id)
+    {
+        return response.status(401).json({error: 'token missing or invalid'})
+    }
+
     const note = new Note({
         title: body.title,
-        owner: body.ownerId,
-        responsable: body.responsableId ? body.responsableId : body.ownerId,
+        owner: decodedToken.id,
+        responsable: body.responsableId ? body.responsableId : decodedToken.id,
         content: body.content,
         moreNotes: [],
         date: new Date(),

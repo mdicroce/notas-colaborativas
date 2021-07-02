@@ -4,8 +4,8 @@ const User = require('../models/user')
 const Room = require('../models/room')
 
 
-notesRouter.get('/',(request,response) => {
-    Note.find({})
+notesRouter.get('/user/:id',(request,response) => {
+    Note.find({'owner': request.params.id})
     .then(note => {
         if(note)
         {
@@ -33,7 +33,7 @@ notesRouter.get('/:id',async (request,response,next) => {
 notesRouter.post('/',async (request,response,next) => {
     
     const body = request.body
-    
+    decodedToken = request.decodedToken
 
     const note = new Note({
         title: body.title,
@@ -58,7 +58,7 @@ notesRouter.post('/',async (request,response,next) => {
 })
 notesRouter.put('/comment/:id', async(request,response,next) => {
     const body = request.body
-    
+    oldNote = await Note.findById(request.params.id)
     const note = {
         title: body.title,
         owner: body.ownerId,
@@ -67,9 +67,11 @@ notesRouter.put('/comment/:id', async(request,response,next) => {
         moreNotes: body.moreNotes,
         date: new Date()
     }
+    console.log(oldNote.moreNotes, "")
+    oldNote.moreNotes = oldNote.moreNotes.concat(note)
     
     try {
-        const updateNote = await Note.findByIdAndUpdate(request.params.id, note,{ new: true})
+        const updateNote = await Note.findByIdAndUpdate(request.params.id, oldNote,{ new: true})
         response.json(updateNote)
     } catch (error) {
         next(error)
@@ -95,15 +97,15 @@ notesRouter.delete('/:id',async (request,response,next) =>{
 notesRouter.put('/:id',async(request,response,next) => {
     const body = request.body
     
-    const note = new Note({
+    const note = {
         title: body.title,
         owner: body.ownerId,
         responsable: body.responsableId || body.ownerId,
         content: body.content,
-        moreNotes: body.newNotes,
+        moreNotes: body.moreNotes,
         date: new Date()
-    })
-
+    }
+    
     try {
         const updateNote = await Note.findByIdAndUpdate(request.params.id, note,{ new: true})
         response.json(updateNote)

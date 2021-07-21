@@ -5,8 +5,17 @@ const Note = require('../models/note')
 
 usersRouter.get('/:user', async (request,response,next) => {
   try {
-    const user = await User.find({username: request.params.user})
-    response.json(user)
+    const requestToFind = new RegExp(request.params.user,'i')
+    const user = await User.find({username: requestToFind})
+    if(user)
+    {
+      response.json(user)
+    }
+    else
+    {
+      user = await User.find({mail: requestToFind})
+      response.json(user)
+    }
   } catch (error) {
     next(error)
   }

@@ -4,8 +4,10 @@ const User = require('../models/user')
 const Room = require('../models/room')
 
 
-notesRouter.get('/user/:id',(request,response) => {
-    Note.find({'owner': request.params.id})
+notesRouter.get('/user/:username',(request,response) => {
+    const userToFind = User.find({'username': request.params.username})
+    .then(response=>response)
+    Note.find({'owner': userToFind.id})
     .then(note => {
         if(note)
         {

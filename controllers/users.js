@@ -32,7 +32,6 @@ usersRouter.get('/notes', async(request,response,next) => {
 })
 usersRouter.post('/', async (request, response, next) => {
   const body = request.body
-
   const saltRounds = 10
   const passwordHash = await bcrypt.hash(body.password, saltRounds)
 

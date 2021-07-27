@@ -3,7 +3,7 @@ const logger = require('./utils/logger')
 const express = require('express')
 const app = express()
 const cors = require('cors')
-
+import 'fontsource-roboto'
 //routes
 const notesRouter = require('./controllers/notes')
 const usersRouter = require('./controllers/users')

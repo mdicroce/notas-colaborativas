@@ -44,7 +44,7 @@ notesRouter.post('/',async (request,response,next) => {
         content: body.content,
         moreNotes: [],
         date: new Date(),
-        room: body.room
+        room: body.room ? body.room : ""
     })
     try {
         

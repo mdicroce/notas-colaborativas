@@ -10,6 +10,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true
   },
+  personalRoom: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Room'
+    },
   passwordHash: String,
 })
 

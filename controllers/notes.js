@@ -4,6 +4,20 @@ const User = require('../models/user')
 const Room = require('../models/room')
 
 
+notesRouter.get('/room/:room', async (request, response) => {
+    
+    const roomToFind = await Room.findById(request.params.room).populate('notes')
+    if(roomToFind)
+    {
+        response.json(roomToFind.notes)
+    }
+    else
+    {
+        response.status(404).end()
+    }
+})
+
+
 notesRouter.get('/user/:username',(request,response) => {
     const userToFind = User.find({'username': request.params.username})
     .then(response=>response)
@@ -50,7 +64,6 @@ notesRouter.post('/',async (request,response,next) => {
         
         const savedNote = await note.save()
         const room = await Room.findById(body.room)
-        console.log(room)
         room.notes = room.notes.concat(savedNote._id)
         await room.save()
         response.json(savedNote)

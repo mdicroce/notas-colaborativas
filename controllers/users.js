@@ -5,6 +5,12 @@ const Note = require('../models/note')
 const Room = require('../models/room')
 const { findByIdAndDelete } = require('../models/user')
 
+usersRouter.delete('/deleteAll', async(request,response) => {
+  await User.deleteMany({})
+  await Room.deleteMany({})
+  await Note.deleteMany({})
+  response.send("vamos menem").end()
+})
 usersRouter.get('/:user', async (request,response,next) => {
   try {
     const requestToFind = new RegExp(request.params.user,'i')
@@ -38,7 +44,7 @@ usersRouter.post('/', async (request, response, next) => {
   const passwordHash = await bcrypt.hash(body.password, saltRounds)
   const user = new User({
     username: body.username,
-    mail: body.mail,
+    email: body.email,
     passwordHash
   })
   try {
@@ -51,7 +57,7 @@ usersRouter.post('/', async (request, response, next) => {
     const savedRoom = await room.save()
     
     const updatedUser = await User.findByIdAndUpdate(savedUser.id, {personalRoom: savedRoom._id}, {new: true})
-  response.json(updatedUser)
+    response.json(updatedUser)
   } catch (error) {
     next(error)
   }

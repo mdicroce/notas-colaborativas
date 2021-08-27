@@ -47,9 +47,12 @@ usersRouter.post('/', async (request, response, next) => {
     email: body.email,
     passwordHash
   })
+  console.log(user)
+
   try {
     const savedUser = await user.save()
     const room = new Room({
+    roomName: savedUser.username + " personal Room",
     owner: savedUser.id,
     users: [savedUser.id],
     pass: ''

@@ -4,33 +4,14 @@ const Note = require('../models/note')
 const User = require('../models/user')
 const bcrypt = require('bcrypt')
 roomRouter.get('/', async(request, response) => {
-    const respuesta = await Room.find({}).populate('owner','users')
+    const decodedToken = request.decodedToken
+    const respuesta = await Room.find({'users':decodedToken.id}).populate('owner').populate('users')
     response.json(respuesta)
 })
 roomRouter.get('/:id',async (request,response) => {
-    const body = request.body
-    const room = await Room.findById(request.params.id).populate('owner').populate('users').populate('notes')
-    const pass = await bcrypt.compare(body.pass ? body.pass : "1",room.pass)
-    try {
-        if(room)
-        {
-            if(pass)
-            {
-                response.json(room)
-            }
-            else if(room.users.some((actual)=> actual.id === request.body.userId))
-            {
-                response.json(room)
-            }
-            response.status(404).end()
-        }
-        else
-        {
-            response.status(404).end()
-        }
-    } catch (error) {
-        next(error)
-    }
+    const decodedToken = request.decodedToken
+    const respuesta = await Room.find({'_id':request.params.id ,'users':decodedToken.id}).populate('owner').populate('users').populate('notes')
+    response.json(respuesta)
 })
 
 roomRouter.post('/',async (request,response,next) => {

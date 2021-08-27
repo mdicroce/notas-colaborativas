@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const noteSchema = require('./note')
 
 const roomSchema = new mongoose.Schema({
+    roomName: String,
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

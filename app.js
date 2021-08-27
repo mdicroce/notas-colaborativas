@@ -31,6 +31,7 @@ app.use(middleware.tokenExtractor)
 app.use(middleware.requestLogger)
 
 app.use('/api/login', loginRouter)
+
 app.use('/api/users', usersRouter)
 
 app.use(middleware.isLogged)

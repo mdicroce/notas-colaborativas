@@ -17,11 +17,13 @@ roomRouter.get('/:id',async (request,response) => {
 roomRouter.post('/',async (request,response,next) => {
     const body = request.body
     const saltRounds = 10
-    
     const passwordHash = await bcrypt.hash(body.pass, saltRounds)
+    const decodedToken = request.decodedToken
+
     const room = new Room({
-        owner: body.ownerId,
-        users: [body.ownerId],
+        roomName: body.roomName,
+        owner: decodedToken.id,
+        users: [decodedToken.id],
         notes: [],
         pass : passwordHash
     })
@@ -34,23 +36,17 @@ roomRouter.post('/',async (request,response,next) => {
 })
 
 roomRouter.put('/:id', async(request,response,next) => {
-    try {
-        let room = await Room.findById(request.params.id)
-        if(!room)
-        {
-            response.status(404)
-        }
-    } catch (error) {
-        next(error)
-    }
-    const newUser = User.find({username: request.body.username})
-    const rooms = 
+    const room = await Room.findById(request.params.id)
+    if(!room)
     {
-        ...room,
-        users: [...room.users, newUser.id]
+        response.status(404)
     }
+    const newUser = await User.findOne({username: request.body.username})
+    room.users = room.users.filter((actual) => {
+        return !actual.equals(newUser._id)
+    }).concat(newUser._id)
     try {
-        const updateRoom = await Room.findByIdAndUpdate(request.params.id, rooms,{ new: true})
+        const updateRoom = await room.save()
         response.json(updateRoom)
     } catch (error) {
         next(error)

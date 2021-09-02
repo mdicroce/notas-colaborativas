@@ -11,7 +11,7 @@ usersRouter.delete('/deleteAll', async(request,response) => {
   await Note.deleteMany({})
   response.send("vamos menem").end()
 })
-usersRouter.get('/:user', async (request,response,next) => {
+usersRouter.get('/search/:user', async (request,response,next) => {
   try {
     const requestToFind = new RegExp(request.params.user,'i')
     const user = await User.find({username: requestToFind})

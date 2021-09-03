@@ -46,8 +46,8 @@ roomRouter.put('/:id', async(request,response,next) => {
         return !actual.equals(newUser._id)
     }).concat(newUser._id)
     try {
-        const updateRoom = await room.save()
-        response.json(updateRoom)
+        await room.save()
+        response.json(await Room.find({'_id':request.params.id}).populate('owner').populate('users').populate('notes'))
     } catch (error) {
         next(error)
     }
